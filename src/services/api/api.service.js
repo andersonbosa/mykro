@@ -1,5 +1,28 @@
 const ApiGateway = require('moleculer-web')
 
+/**                                
+ * @typedef ServiceRoute           
+ * @property {string} path         
+ * @property {string} mappingPolicy
+ * @property {object} aliases      
+ * @property {object} bodyParsers  
+ */
+
+const defaultRoutes = [
+	{
+		path: '/status',
+		aliases: {
+			'GET /' (req, res) {
+				res.end(JSON.stringify({ alive: true }))
+			}
+		},
+		mappingPolicy: 'restrict',
+		bodyParsers: {
+			json: true
+		}
+	}
+]
+
 module.exports = {
 	name: 'Api',
 	mixins: [ApiGateway],
@@ -8,58 +31,48 @@ module.exports = {
 	settings: {
 		port: process.env.PORT || 3040,
 		path: '/api',
+		/** @type {ServiceRoute[]} **/
 		routes: [
 			{
 				path: '/webhooks',
-				mappingPolicy: 'restrict',
 				aliases: {
 					'POST /habitica': 'habitica.onWebhookTrigger'
 				},
+				mappingPolicy: 'restrict',
 				bodyParsers: {
 					json: true
 				}
 			},
-			
+
 			{
 				path: '/habitica/',
-				mappingPolicy: 'restrict',
 				aliases: {
 					'GET /tasks/': 'habiticaTask.list',
 				},
+				mappingPolicy: 'restrict',
 				bodyParsers: {
 					json: true
 				}
 			},
 
 			{
-				mappingPolicy: 'restrict',
-				path: '/status',
-				aliases: {
-					'GET /'(req, res) {
-						res.end(JSON.stringify({ alive: true }))
-					}
-				},
-				bodyParsers: {
-					json: true
-				}
-			},
-
-			{
-				mappingPolicy: 'restrict',
 				path: '/mocks',
 				aliases: {
 					'GET /products': 'mocks.getProducts',
 					'GET /product/:id': 'mocks.getProductById',
 				},
+				mappingPolicy: 'restrict',
 				bodyParsers: {
 					json: true
 				},
 				cors: {
-					origin: [ 'http://localhost:3000' ],
+					origin: ['http://localhost:3000'],
 					methods: ['GET'],
 					credentials: false
 				},
-			}
+			},
+
+			...defaultRoutes
 
 		]
 	},
